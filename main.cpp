@@ -2,6 +2,7 @@
 #include <fstream>
 #include <cstring>
 #include <cstdlib>
+#include <limits>  // For numeric_limits<streamsize>::max()
 
 using namespace std;
 
@@ -25,7 +26,7 @@ void DirectoryEntry::get() {
 
     cout << "Enter phone number: ";
     cin >> phoneNumber;
-    cin.ignore();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');  // Flush the input buffer
 }
 
 void DirectoryEntry::show() {
@@ -49,7 +50,7 @@ int main() {
         cout << "6. Exit\n";
         cout << "Enter your choice: ";
         cin >> choice;
-        cin.ignore(); // To clear newline from input buffer
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');  // Flush the input buffer
 
         switch (choice) {
             case 1: {
@@ -105,7 +106,7 @@ int main() {
                 unsigned int searchPhone;
                 cout << "Enter the phone number to modify: ";
                 cin >> searchPhone;
-                cin.ignore();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');  // Flush the input buffer
 
                 fstream tempFile("temp.dat", ios::out | ios::binary);
                 file.open("directory.dat", ios::in | ios::binary);
@@ -130,9 +131,13 @@ int main() {
                 tempFile.close();
 
                 if (modified) {
-                    remove("directory.dat");
-                    rename("temp.dat", "directory.dat");
-                    cout << "Record modified successfully.\n";
+                    if (remove("directory.dat") != 0) {
+                        cerr << "Error deleting old file!\n";
+                    } else if (rename("temp.dat", "directory.dat") != 0) {
+                        cerr << "Error renaming file!\n";
+                    } else {
+                        cout << "Record modified successfully.\n";
+                    }
                 } else {
                     cout << "No record found with the given phone number.\n";
                 }
@@ -163,9 +168,13 @@ int main() {
                 tempFile.close();
 
                 if (deleted) {
-                    remove("directory.dat");
-                    rename("temp.dat", "directory.dat");
-                    cout << "Record deleted successfully.\n";
+                    if (remove("directory.dat") != 0) {
+                        cerr << "Error deleting old file!\n";
+                    } else if (rename("temp.dat", "directory.dat") != 0) {
+                        cerr << "Error renaming file!\n";
+                    } else {
+                        cout << "Record deleted successfully.\n";
+                    }
                 } else {
                     cout << "No record found with the given name.\n";
                 }
